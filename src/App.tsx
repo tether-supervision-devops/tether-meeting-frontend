@@ -1,19 +1,23 @@
 import "./App.css";
 import { ZoomMtg } from "@zoom/meetingsdk";
+import { useEffect } from "react";
 
+// Preload Zoom SDK
 ZoomMtg.preLoadWasm();
 ZoomMtg.prepareWebSDK();
 
 function App() {
-  const authEndpoint = ""; // http://localhost:4000
-  const meetingNumber = "";
-  const passWord = "";
-  const role = 0;
-  const userName = "React";
-  const userEmail = "";
-  const registrantToken = "";
-  const zakToken = "";
-  const leaveUrl = "http://localhost:5173";
+  // Get query parameters from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const meetingNumber = urlParams.get("meetingNumber") || "0";
+  const passWord = urlParams.get("passWord") || "";
+  const role = parseInt(urlParams.get("role") || "0", 10);
+  const userName = urlParams.get("userName") || "React";
+  const userEmail = urlParams.get("userEmail") || "react@zoom.us";
+  const registrantToken = urlParams.get("registrantToken") || "";
+  const leaveUrl = urlParams.get("leaveUrl") || "app.tethersupervision.com";
+
+  const authEndpoint = "https://meetingsdk-auth-endpoint-sample-production-c11f.up.railway.app";
 
   const getSignature = async () => {
     try {
@@ -21,56 +25,76 @@ function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          meetingNumber: meetingNumber,
-          role: role,
+          meetingNumber,
+          role,
+          userEmail,
           videoWebRtcMode: 1,
         }),
       });
       const res = await req.json();
-      const signature = res.signature as string;
-      startMeeting(signature);
+
+      if (!res.signature) {
+        throw new Error("No signature returned from server");
+      }
+
+      // ✅ Grab signature AND zak from backend
+      startMeeting(res.signature, res.zak || "");
     } catch (e) {
-      console.log(e);
+      console.error("Signature fetch error:", e);
+      alert("Failed to get signature");
     }
   };
 
-  function startMeeting(signature: string) {
-    document.getElementById("zmmtg-root")!.style.display = "block";
+  const startMeeting = (signature: string, zak: string) => {
+    const rootElement = document.getElementById("zmmtg-root");
+    if (rootElement) {
+      rootElement.style.display = "block";
+    }
 
     ZoomMtg.init({
-      leaveUrl: leaveUrl,
+      leaveUrl,
       patchJsMedia: true,
       leaveOnPageUnload: true,
-      success: (success: unknown) => {
-        console.log(success);
-        // can this be async?
+      success: () => {
+        console.log("Init success");
         ZoomMtg.join({
-          signature: signature,
-          meetingNumber: meetingNumber,
-          passWord: passWord,
-          userName: userName,
-          userEmail: userEmail,
+          signature,
+          meetingNumber,
+          passWord,
+          userName,
+          userEmail,
           tk: registrantToken,
-          zak: zakToken,
+          zak, // ✅ dynamically passed in
           success: (success: unknown) => {
-            console.log(success);
+            console.log("Join success:", success);
           },
           error: (error: unknown) => {
-            console.log(error);
+            console.error("Join error:", error);
           },
         });
       },
       error: (error: unknown) => {
-        console.log(error);
+        console.error("Init error:", error);
       },
     });
-  }
+  };
+
+  // Optionally, trigger getSignature automatically if all required parameters are present
+  useEffect(() => {
+    if (meetingNumber && userName) {
+      getSignature();
+    }
+  }, [meetingNumber, userName]);
 
   return (
     <div className="App">
       <main>
         <h1>Zoom Meeting SDK Sample React</h1>
-        <button onClick={getSignature}>Join Meeting</button>
+        {!meetingNumber || !userName ? (
+          <p>Please provide meetingNumber and userName in the URL</p>
+        ) : (
+          <button onClick={getSignature}>Join Meeting</button>
+        )}
       </main>
     </div>
   );

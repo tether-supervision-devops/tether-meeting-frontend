@@ -4,12 +4,12 @@ import ZoomMtgEmbedded from "@zoom/meetingsdk/embedded";
 function App() {
   const client = ZoomMtgEmbedded.createClient();
 
-  const authEndpoint = ""; // http://localhost:4000
-  const meetingNumber = "";
+  const authEndpoint = "https://meetingsdk-auth-endpoint-sample-3s9o-production.up.railway.app"; // http://localhost:4000
+  const meetingNumber = "84634097083";
   const passWord = "";
   const role = 0;
   const userName = "React";
-  const userEmail = "";
+  const userEmail = "react@zoom.us";
   const registrantToken = "";
   const zakToken = "";
 
