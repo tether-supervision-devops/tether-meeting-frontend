@@ -1,6 +1,6 @@
 import "./App.css";
 import { ZoomMtg } from "@zoom/meetingsdk";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Preload Zoom SDK
 ZoomMtg.preLoadWasm();
@@ -9,47 +9,62 @@ ZoomMtg.prepareWebSDK();
 function App() {
   // Get query parameters from URL
   const urlParams = new URLSearchParams(window.location.search);
-  const meetingNumber = urlParams.get("meetingNumber") || "0";
-  const passWord = urlParams.get("passWord") || "";
-  const role = parseInt(urlParams.get("role") || "0", 10);
-  const userName = urlParams.get("userName") || "React";
-  const userEmail = urlParams.get("userEmail") || "react@zoom.us";
-  const registrantToken = urlParams.get("registrantToken") || "";
-  const leaveUrl = urlParams.get("leaveUrl") || "app.tethersupervision.com";
+  const meetingNumber = urlParams.get("meetingNumber") ?? "";
+  const passWord = urlParams.get("passWord") ?? "";
+  const userName = urlParams.get("userName") ?? "";
+  const leaveUrl = urlParams.get("leaveUrl") ?? "https://app.tethersupervision.com";
+  const uuid = urlParams.get("uuid") ?? "";
 
-  const authEndpoint = "https://meetingsdk-auth-endpoint-sample-production-c11f.up.railway.app";
+  const authEndpoint =
+    "https://tether-meetingsdk-auth-endpoint-production.up.railway.app/sign";
+
+  // Prevent double init/join (React 18 StrictMode + re-click)
+  const startedRef = useRef(false);
+  const signatureExpRef = useRef<number | null>(null);
+  const [joining, setJoining] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>(`${uuid}@tether.local`);
+
+  async function fetchSignature(): Promise<{ signature: string; zak?: string; exp?: number; zoomEmail?: string }> {
+    const req = await fetch(authEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ meetingNumber, uuid, videoWebRtcMode: 1 }),
+    });
+    const res = await req.json();
+    if (!res.signature) throw new Error("No signature returned from server");
+    if (res.exp) signatureExpRef.current = res.exp * 1000;
+    console.log("Fetched payload from /sign:", res);
+    if (res.zoomEmail && typeof res.zoomEmail === "string" && res.zoomEmail.trim() !== "") {
+      setUserEmail(res.zoomEmail);
+    } else {
+      setUserEmail(`${uuid}@tether.local`);
+    }
+    return res;
+  }
 
   const getSignature = async () => {
+    if (startedRef.current || joining) return;
+    startedRef.current = true;
+    setJoining(true);
     try {
-      const req = await fetch(authEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          meetingNumber,
-          role,
-          userEmail,
-          videoWebRtcMode: 1,
-        }),
-      });
-      const res = await req.json();
-
-      if (!res.signature) {
-        throw new Error("No signature returned from server");
-      }
-
-      // ✅ Grab signature AND zak from backend
-      startMeeting(res.signature, res.zak || "");
+      console.log("URL Params:", { meetingNumber, passWord, userName, uuid, leaveUrl });
+      const res = await fetchSignature();
+      const zak = (typeof res.zak === "string" && res.zak.trim() !== "") ? res.zak : undefined;
+      const emailToUse = (res.zoomEmail && typeof res.zoomEmail === "string" && res.zoomEmail.trim() !== "") ? res.zoomEmail : `${uuid}@tether.local`;
+      console.log("Using userEmail for startMeeting:", emailToUse);
+      startMeeting(res.signature, zak, emailToUse);
     } catch (e) {
       console.error("Signature fetch error:", e);
       alert("Failed to get signature");
+      startedRef.current = false;
+    } finally {
+      setJoining(false);
     }
   };
 
-  const startMeeting = (signature: string, zak: string) => {
+  const startMeeting = (signature: string, zak?: string, email?: string) => {
     const rootElement = document.getElementById("zmmtg-root");
-    if (rootElement) {
-      rootElement.style.display = "block";
-    }
+    if (rootElement) rootElement.style.display = "block";
 
     ZoomMtg.init({
       leaveUrl,
@@ -57,45 +72,113 @@ function App() {
       leaveOnPageUnload: true,
       success: () => {
         console.log("Init success");
-        ZoomMtg.join({
+
+        // @ts-expect-error: "disconnect" is not in types but works at runtime
+        ZoomMtg.inMeetingServiceListener("disconnect", async () => {
+          console.warn("Zoom disconnected; attempting to rejoin…");
+          try {
+            const msLeft = (signatureExpRef.current ?? 0) - Date.now();
+            const needNewSig = msLeft < 60_000;
+            let signatureToUse = "";
+            let zakToUse: string | undefined = undefined;
+            let emailToUse = email;
+            if (needNewSig) {
+              const fresh = await fetchSignature();
+              signatureToUse = fresh.signature;
+              zakToUse = (typeof fresh.zak === "string" && fresh.zak.trim() !== "") ? fresh.zak : undefined;
+              emailToUse = (fresh.zoomEmail && typeof fresh.zoomEmail === "string" && fresh.zoomEmail.trim() !== "") ? fresh.zoomEmail : `${uuid}@tether.local`;
+            } else {
+              const current = await fetchSignature();
+              signatureToUse = current.signature;
+              zakToUse = (typeof current.zak === "string" && current.zak.trim() !== "") ? current.zak : undefined;
+              emailToUse = (current.zoomEmail && typeof current.zoomEmail === "string" && current.zoomEmail.trim() !== "") ? current.zoomEmail : `${uuid}@tether.local`;
+            }
+            console.log("Using userEmail for rejoin:", emailToUse);
+            ZoomMtg.join({
+              signature: signatureToUse,
+              meetingNumber,
+              passWord,
+              userName,
+              userEmail: emailToUse, // always include
+              ...(zakToUse ? { zak: zakToUse } : {}),
+              success: () => console.log("Rejoin success"),
+              error: (err: unknown) => {
+                console.error("Rejoin failed", err);
+                try { ZoomMtg.leaveMeeting({}); } catch { }
+                fetchSignature()
+                  .then(f => {
+                    const validZak = (typeof f.zak === "string" && f.zak.trim() !== "") ? f.zak : undefined;
+                    const emailToPass = (f.zoomEmail && typeof f.zoomEmail === "string" && f.zoomEmail.trim() !== "") ? f.zoomEmail : `${uuid}@tether.local`;
+                    startMeeting(f.signature, validZak, emailToPass);
+                  })
+                  .catch(e => console.error("Full restart failed", e));
+              },
+            } as any);
+          } catch (err) {
+            console.error("Rejoin flow error", err);
+          }
+        });
+
+        const joinParams: any = {
           signature,
           meetingNumber,
           passWord,
           userName,
-          userEmail,
-          tk: registrantToken,
-          zak, // ✅ dynamically passed in
+          userEmail: email, // always include for attendees
+          // sdkKey: not needed on v4+ (removing to avoid warning)
+          ...(typeof zak === "string" && zak.trim() !== "" ? { zak } : {}),
           success: (success: unknown) => {
             console.log("Join success:", success);
           },
           error: (error: unknown) => {
             console.error("Join error:", error);
           },
-        });
+        } as any;
+
+        console.log("Joining Zoom with:", { meetingNumber, passWord, userName, signature, zak, userEmail: email });
+        ZoomMtg.join(joinParams);
       },
       error: (error: unknown) => {
         console.error("Init error:", error);
+        // let user retry if init fails
+        startedRef.current = false;
       },
     });
   };
 
-  // Optionally, trigger getSignature automatically if all required parameters are present
+  // Auto-join once on first mount if credentials provided
   useEffect(() => {
     if (meetingNumber && userName) {
       getSignature();
     }
-  }, [meetingNumber, userName]);
+    // IMPORTANT: empty deps so StrictMode’s double-call won’t re-run this due to dep changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const goOffline = () => console.warn("You’re offline — Zoom will try to reconnect.");
+    const goOnline = () => console.warn("Back online — reconnecting if needed…");
+    window.addEventListener("offline", goOffline);
+    window.addEventListener("online", goOnline);
+    return () => {
+      window.removeEventListener("offline", goOffline);
+      window.removeEventListener("online", goOnline);
+    };
+  }, []);
 
   return (
     <div className="App">
       <main>
-        <h1>Zoom Meeting SDK Sample React</h1>
+        <h1>Zoom Meeting SDK</h1>
         {!meetingNumber || !userName ? (
           <p>Please provide meetingNumber and userName in the URL</p>
         ) : (
-          <button onClick={getSignature}>Join Meeting</button>
+          <button disabled={joining} onClick={getSignature}>
+            {joining ? "Joining…" : "Join Meeting"}
+          </button>
         )}
       </main>
+      <div id="zmmtg-root" style={{ display: "none" }}></div>
     </div>
   );
 }
