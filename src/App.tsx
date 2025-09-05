@@ -22,7 +22,6 @@ function App() {
   const startedRef = useRef(false);
   const signatureExpRef = useRef<number | null>(null);
   const [joining, setJoining] = useState(false);
-  const [userEmail, setUserEmail] = useState<string>(`${uuid}@tether.local`);
 
   async function fetchSignature(): Promise<{ signature: string; zak?: string; exp?: number; zoomEmail?: string }> {
     const req = await fetch(authEndpoint, {
@@ -34,11 +33,6 @@ function App() {
     if (!res.signature) throw new Error("No signature returned from server");
     if (res.exp) signatureExpRef.current = res.exp * 1000;
     console.log("Fetched payload from /sign:", res);
-    if (res.zoomEmail && typeof res.zoomEmail === "string" && res.zoomEmail.trim() !== "") {
-      setUserEmail(res.zoomEmail);
-    } else {
-      setUserEmail(`${uuid}@tether.local`);
-    }
     return res;
   }
 
