@@ -161,19 +161,44 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
-      <main>
-        <h1>Zoom Meeting SDK</h1>
-        {!meetingNumber || !userName ? (
-          <p>Please provide meetingNumber and userName in the URL</p>
-        ) : (
-          <button disabled={joining} onClick={getSignature}>
+  <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 text-center px-6">
+    <main className="max-w-lg bg-white rounded-2xl shadow-lg p-10">
+      {/* Logo */}
+      <img
+        src="https://cdn.prod.website-files.com/67452425f61385512d1640b8/68661d220ff8dfd62198a6f7_Tether%20Logo%20(2)-p-500.png"
+        alt="Tether Supervision Logo"
+        className="mx-auto h-16 mb-6"
+      />
+  
+      <h1 className="text-3xl font-bold text-blue-800 mb-4">Tether Supervision</h1>
+  
+      {!meetingNumber || !userName ? (
+        <>
+          <h2 className="text-xl font-semibold text-gray-800 mb-3">Thank You</h2>
+          <p className="text-gray-600">
+            We appreciate your using Tether Supervision.  
+            Please refresh the supervision screen to refresh you session.
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="text-gray-600 mb-6">
+            You are about to join a secure Tether Supervision session.
+          </p>
+          <button
+            disabled={joining}
+            onClick={getSignature}
+            className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors shadow 
+              ${joining ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+          >
             {joining ? "Joining…" : "Join Meeting"}
           </button>
-        )}
-      </main>
-      <div id="zmmtg-root" style={{ display: "none" }}></div>
-    </div>
+        </>
+      )}
+    </main>
+  
+    <div id="zmmtg-root" style={{ display: "none" }}></div>
+  </div>
   );
 }
 
