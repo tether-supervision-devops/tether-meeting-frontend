@@ -161,48 +161,51 @@ function App() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-between min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 text-center px-8 font-sans">
-    <main className="max-w-xl bg-white rounded-3xl shadow-2xl px-12 py-16 mt-12 md:mt-20 transition-all duration-500 hover:shadow-3xl ring-1 ring-blue-100">
-      {/* Logo */}
-      <img
-        src="https://cdn.prod.website-files.com/67452425f61385512d1640b8/68661d220ff8dfd62198a6f7_Tether%20Logo%20(2)-p-500.png"
-        alt="Tether Supervision Logo"
-        className="mx-auto h-24 mb-10 transition-transform duration-500 hover:scale-110"
-      />
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 font-sans">
+    {/* Main content centered with padding */}
+    <main className="flex-grow flex flex-col items-center justify-center px-6">
+      <div className="max-w-xl bg-white rounded-3xl shadow-2xl px-12 py-16 mt-10 mb-12 transition-all duration-500 hover:shadow-3xl ring-1 ring-blue-100 text-center">
+        {/* Logo */}
+        <img
+          src="https://cdn.prod.website-files.com/67452425f61385512d1640b8/68661d220ff8dfd62198a6f7_Tether%20Logo%20(2)-p-500.png"
+          alt="Tether Supervision Logo"
+          className="mx-auto h-24 mb-10 transition-transform duration-500 hover:scale-110"
+        />
   
-      {!meetingNumber || !userName ? (
-        <>
-          <h2 className="text-3xl font-semibold text-gray-900 mb-6 animate-fade-in">
-            Thank You
-          </h2>
-          <p className="text-gray-700 leading-relaxed text-lg animate-fade-in">
-            We appreciate your use of Tether Supervision.  
-            Please refresh the supervision screen to start a new session.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="text-gray-700 mb-10 leading-relaxed text-xl animate-fade-in">
-            You are about to join a secure Tether Supervision session.
-          </p>
-          <button
-            disabled={joining}
-            onClick={getSignature}
-            className={`w-full py-4 px-8 rounded-xl font-semibold transition-all duration-300 shadow-lg 
-              ${
-                joining
-                  ? "bg-gray-400 cursor-not-allowed opacity-70"
-                  : "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50"
-              } animate-fade-in`}
-          >
-            {joining ? "Joining…" : "Join Meeting"}
-          </button>
-        </>
-      )}
+        {!meetingNumber || !userName ? (
+          <>
+            <h2 className="text-3xl font-semibold text-gray-900 mb-6 animate-fade-in">
+              Thank You
+            </h2>
+            <p className="text-gray-700 leading-relaxed text-lg animate-fade-in">
+              We appreciate your use of Tether Supervision.  
+              Please refresh the supervision screen to start a new session.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-gray-700 mb-10 leading-relaxed text-xl animate-fade-in">
+              You are about to join a secure Tether Supervision session.
+            </p>
+            <button
+              disabled={joining}
+              onClick={getSignature}
+              className={`w-full py-4 px-8 rounded-xl font-semibold transition-all duration-300 shadow-lg 
+                ${
+                  joining
+                    ? "bg-gray-400 cursor-not-allowed opacity-70"
+                    : "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50"
+                } animate-fade-in`}
+            >
+              {joining ? "Joining…" : "Join Meeting"}
+            </button>
+          </>
+        )}
+      </div>
     </main>
   
-    {/* Footer */}
-    <footer className="w-full text-center py-6 text-sm text-gray-600 mt-10">
+    {/* Footer with spacing */}
+    <footer className="text-center py-6 text-sm text-gray-600 border-t border-blue-100">
       <p className="mb-1">© {new Date().getFullYear()} Tether Supervision</p>
       <p className="text-gray-500">
         HIPAA-compliant supervision platform • All rights reserved
