@@ -161,41 +161,118 @@ function App() {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 font-sans">
+    <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      minHeight: "100vh",
+      fontFamily: "sans-serif",
+      background: "linear-gradient(to bottom right, #ebf8ff, #bfdbfe, #93c5fd)",
+    }}
+  >
     {/* Main content centered with padding */}
-    <main className="flex-grow flex flex-col items-center justify-center px-6">
-      <div className="max-w-xl bg-white rounded-3xl shadow-2xl px-12 py-16 mt-10 mb-12 transition-all duration-500 hover:shadow-3xl ring-1 ring-blue-100 text-center">
+    <main
+      style={{
+        flexGrow: 1,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "0 24px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "40rem",
+          background: "white",
+          borderRadius: "1.5rem",
+          boxShadow: "0 20px 25px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.04)",
+          padding: "64px 48px",
+          marginTop: "2.5rem",
+          marginBottom: "3rem",
+          textAlign: "center",
+          border: "1px solid #dbeafe",
+          transition: "all 0.5s ease",
+        }}
+      >
         {/* Logo */}
         <img
           src="https://cdn.prod.website-files.com/67452425f61385512d1640b8/68661d220ff8dfd62198a6f7_Tether%20Logo%20(2)-p-500.png"
           alt="Tether Supervision Logo"
-          className="mx-auto h-24 mb-10 transition-transform duration-500 hover:scale-110"
+          style={{
+            display: "block",
+            margin: "0 auto 2.5rem auto",
+            height: "96px",
+            transition: "transform 0.5s ease",
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+          onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
         />
   
         {!meetingNumber || !userName ? (
           <>
-            <h2 className="text-3xl font-semibold text-gray-900 mb-6 animate-fade-in">
+            <h2
+              style={{
+                fontSize: "1.875rem",
+                fontWeight: 600,
+                color: "#111827",
+                marginBottom: "1.5rem",
+              }}
+            >
               Thank You
             </h2>
-            <p className="text-gray-700 leading-relaxed text-lg animate-fade-in">
-              We appreciate your use of Tether Supervision.  
+            <p
+              style={{
+                fontSize: "1.125rem",
+                lineHeight: 1.6,
+                color: "#374151",
+              }}
+            >
+              We appreciate your use of Tether Supervision. <br />
               Please refresh the supervision screen to start a new session.
             </p>
           </>
         ) : (
           <>
-            <p className="text-gray-700 mb-10 leading-relaxed text-xl animate-fade-in">
+            <p
+              style={{
+                fontSize: "1.25rem",
+                lineHeight: 1.6,
+                color: "#374151",
+                marginBottom: "2.5rem",
+              }}
+            >
               You are about to join a secure Tether Supervision session.
             </p>
             <button
               disabled={joining}
               onClick={getSignature}
-              className={`w-full py-4 px-8 rounded-xl font-semibold transition-all duration-300 shadow-lg 
-                ${
-                  joining
-                    ? "bg-gray-400 cursor-not-allowed opacity-70"
-                    : "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50"
-                } animate-fade-in`}
+              style={{
+                width: "100%",
+                padding: "1rem 2rem",
+                borderRadius: "0.75rem",
+                fontWeight: 600,
+                transition: "all 0.3s ease",
+                boxShadow: joining
+                  ? "none"
+                  : "0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05)",
+                background: joining
+                  ? "#9ca3af"
+                  : "linear-gradient(to right, #2563eb, #1d4ed8)",
+                color: "white",
+                cursor: joining ? "not-allowed" : "pointer",
+                opacity: joining ? 0.7 : 1,
+              }}
+              onMouseOver={(e) => {
+                if (!joining)
+                  e.currentTarget.style.background =
+                    "linear-gradient(to right, #1d4ed8, #1e40af)";
+              }}
+              onMouseOut={(e) => {
+                if (!joining)
+                  e.currentTarget.style.background =
+                    "linear-gradient(to right, #2563eb, #1d4ed8)";
+              }}
             >
               {joining ? "Joining…" : "Join Meeting"}
             </button>
@@ -205,9 +282,19 @@ function App() {
     </main>
   
     {/* Footer with spacing */}
-    <footer className="text-center py-6 text-sm text-gray-600 border-t border-blue-100">
-      <p className="mb-1">© {new Date().getFullYear()} Tether Supervision</p>
-      <p className="text-gray-500">
+    <footer
+      style={{
+        textAlign: "center",
+        padding: "1.5rem 0",
+        fontSize: "0.875rem",
+        color: "#4b5563",
+        borderTop: "1px solid #dbeafe",
+      }}
+    >
+      <p style={{ marginBottom: "0.25rem" }}>
+        © {new Date().getFullYear()} Tether Supervision
+      </p>
+      <p style={{ color: "#6b7280" }}>
         HIPAA-compliant supervision platform • All rights reserved
       </p>
     </footer>
