@@ -161,35 +161,35 @@ function App() {
   }, []);
 
   return (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 text-center px-6">
-    <main className="max-w-lg bg-white rounded-2xl shadow-lg p-10">
+  <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 text-center px-6 font-sans">
+    <main className="max-w-lg bg-white rounded-3xl shadow-2xl p-12 transition-all duration-300 hover:shadow-xl">
       {/* Logo */}
       <img
         src="https://cdn.prod.website-files.com/67452425f61385512d1640b8/68661d220ff8dfd62198a6f7_Tether%20Logo%20(2)-p-500.png"
         alt="Tether Supervision Logo"
-        className="mx-auto h-16 mb-6"
+        className="mx-auto h-20 mb-8 transition-transform duration-300 hover:scale-105"
       />
   
-      <h1 className="text-3xl font-bold text-blue-800 mb-4">Tether Supervision</h1>
+      <h1 className="text-4xl font-extrabold text-blue-900 mb-5 tracking-tight animate-fade-in">Tether Supervision</h1>
   
       {!meetingNumber || !userName ? (
         <>
-          <h2 className="text-xl font-semibold text-gray-800 mb-3">Thank You</h2>
-          <p className="text-gray-600">
-            We appreciate your using Tether Supervision.  
-            Please refresh the supervision screen to refresh you session.
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4 animate-fade-in">Thank You</h2>
+          <p className="text-gray-600 leading-relaxed animate-fade-in">
+            We appreciate your use of Tether Supervision.  
+            Please refresh the supervision screen to start a new session.
           </p>
         </>
       ) : (
         <>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 mb-8 leading-relaxed text-lg animate-fade-in">
             You are about to join a secure Tether Supervision session.
           </p>
           <button
             disabled={joining}
             onClick={getSignature}
-            className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors shadow 
-              ${joining ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+            className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-300 shadow-md 
+              ${joining ? "bg-gray-400 cursor-not-allowed opacity-75" : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"} animate-fade-in`}
           >
             {joining ? "Joining…" : "Join Meeting"}
           </button>
