@@ -161,8 +161,8 @@ function App() {
   }, []);
 
   return (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 text-center px-8 font-sans">
-    <main className="max-w-xl bg-white rounded-3xl shadow-2xl p-16 transition-all duration-500 hover:shadow-3xl ring-1 ring-blue-50">
+    <div className="flex flex-col items-center justify-between min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 text-center px-8 font-sans">
+    <main className="max-w-xl bg-white rounded-3xl shadow-2xl px-12 py-16 mt-12 md:mt-20 transition-all duration-500 hover:shadow-3xl ring-1 ring-blue-100">
       {/* Logo */}
       <img
         src="https://cdn.prod.website-files.com/67452425f61385512d1640b8/68661d220ff8dfd62198a6f7_Tether%20Logo%20(2)-p-500.png"
@@ -170,11 +170,11 @@ function App() {
         className="mx-auto h-24 mb-10 transition-transform duration-500 hover:scale-110"
       />
   
-      <h1 className="text-5xl font-extrabold text-blue-950 mb-6 tracking-tight animate-fade-in">Tether Supervision</h1>
-  
       {!meetingNumber || !userName ? (
         <>
-          <h2 className="text-3xl font-semibold text-gray-900 mb-5 animate-fade-in">Thank You</h2>
+          <h2 className="text-3xl font-semibold text-gray-900 mb-6 animate-fade-in">
+            Thank You
+          </h2>
           <p className="text-gray-700 leading-relaxed text-lg animate-fade-in">
             We appreciate your use of Tether Supervision.  
             Please refresh the supervision screen to start a new session.
@@ -189,13 +189,25 @@ function App() {
             disabled={joining}
             onClick={getSignature}
             className={`w-full py-4 px-8 rounded-xl font-semibold transition-all duration-300 shadow-lg 
-              ${joining ? "bg-gray-400 cursor-not-allowed opacity-70" : "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50"} animate-fade-in`}
+              ${
+                joining
+                  ? "bg-gray-400 cursor-not-allowed opacity-70"
+                  : "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50"
+              } animate-fade-in`}
           >
             {joining ? "Joining…" : "Join Meeting"}
           </button>
         </>
       )}
     </main>
+  
+    {/* Footer */}
+    <footer className="w-full text-center py-6 text-sm text-gray-600 mt-10">
+      <p className="mb-1">© {new Date().getFullYear()} Tether Supervision</p>
+      <p className="text-gray-500">
+        HIPAA-compliant supervision platform • All rights reserved
+      </p>
+    </footer>
   
     <div id="zmmtg-root" style={{ display: "none" }}></div>
   </div>
