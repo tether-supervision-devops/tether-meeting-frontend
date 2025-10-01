@@ -160,6 +160,27 @@ function App() {
     };
   }, []);
 
+  // Listen for postMessage from parent for "ASK_FOR_HELP"
+  useEffect(() => {
+    const handler = (event: MessageEvent) => {
+      if (event.data?.type === "ASK_FOR_HELP") {
+        ZoomMtg.askForHelp({
+          success: () => {
+            event.source?.postMessage({ type: "ASK_FOR_HELP_SUCCESS" }, event.origin);
+          },
+          error: (err: any) => {
+            event.source?.postMessage(
+              { type: "ASK_FOR_HELP_ERROR", reason: err?.reason || "unknown" },
+              event.origin
+            );
+          },
+        });
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
   return (
     <div
     style={{
