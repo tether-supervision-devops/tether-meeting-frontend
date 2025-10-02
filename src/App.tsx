@@ -165,38 +165,29 @@ function App() {
     function handleMessage(event: MessageEvent) {
       console.log("Iframe got message:", event.data, "from origin:", event.origin);
       if (event.data?.type === "ASK_FOR_HELP") {
-        console.log("Handling ASK_FOR_HELP with getCurrentBreakoutRoom...");
-        ZoomMtg.getCurrentBreakoutRoom({
-          success: (res: any) => {
-            console.log("Current breakout room:", res);
-            window.parent.postMessage(
-              {
-                type: "HELP_REQUEST",
-                user: {
-                  uuid,
-                  userName,
-                  meetingNumber,
-                  breakoutRoom: {
-                    name: res.name,
-                    roomId: res.roomId,
-                    status: res.attendeeStatus,
-                  },
-                },
-              },
-              "*"
-            );
-          },
-          error: (err: any) => {
-            console.error("getCurrentBreakoutRoom error:", err);
-            window.parent.postMessage(
-              { type: "HELP_REQUEST_ERROR", reason: err?.reason || "Unknown error" },
-              "*"
-            );
-          },
-        });
+        console.log("Calling ZoomMtg.askForHelp...");
+        if (ZoomMtg && typeof ZoomMtg.askForHelp === "function") {
+          ZoomMtg.askForHelp({
+            success: () => {
+              console.log("askForHelp success");
+              // notify parent
+              window.parent.postMessage({ type: "ASK_FOR_HELP_SUCCESS" }, "*");
+            },
+            error: (err: any) => {
+              console.error("askForHelp error:", err);
+              // notify parent
+              window.parent.postMessage(
+                { type: "ASK_FOR_HELP_ERROR", reason: err?.reason || "Unknown error" },
+                "*"
+              );
+            },
+          });
+        } else {
+          console.warn("ZoomMtg.askForHelp not available");
+        }
       }
     }
-  
+
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, []);
